@@ -6,14 +6,14 @@ import scala.language.postfixOps
 
 class WikiParser {
 
-  def pars_url(start_url: String, number_of_layers: Int = 1) = {
+  def pars_url(start_url: String, number_of_levels: Int = 1) = {
 
     val start_name = start_url.slice(start_url.lastIndexOf("/") + 1, start_url.length)
 
-    main_pars(start_name, number_of_layers)
+    main_pars(start_name, number_of_levels)
   }
 
-  def main_pars(start_name: String, number_of_layers: Int = 1) = {
+  def main_pars(start_name: String, number_of_levels: Int = 1) = {
 
     val response_for_page_id: HttpResponse[String] = Http("https://en.wikipedia.org/w/api.php?action=parse&page="
       + name_normalizer(start_name) + "&prop=links&format=json").asString
