@@ -75,6 +75,10 @@ object Main {
         println("\nThe program is designed to get the number of all links from a Wikipedia article leading to other articles\n" +
           "Example of name of page: pet door\n" +
           "Example of url of page: https://en.wikipedia.org/wiki/Pet_door")
+
+      case 0 =>
+        wiki.main_pars("pet door", 3)
+
       case _ => println("\nExiting from program...")
     }
 
