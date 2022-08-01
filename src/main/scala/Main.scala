@@ -12,6 +12,7 @@ object Main {
       "3 - Search by name of page for the specified number of levels\n" +
       "4 - Search by url of page for the specified number of levels\n" +
       "5 - Help\n" +
+      "0 - Test\n" +
       "Any other number - Exit\n")
 
     while (start_number == -110) {
@@ -77,12 +78,9 @@ object Main {
           "Example of url of page: https://en.wikipedia.org/wiki/Pet_door")
 
       case 0 =>
-        wiki.main_pars("pet door", 3)
+        wiki.main_pars("pet door", 4)
 
       case _ => println("\nExiting from program...")
     }
-
-
   }
-
 }
