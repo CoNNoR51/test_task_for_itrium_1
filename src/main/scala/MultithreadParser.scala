@@ -1,22 +1,21 @@
 import play.api.libs.json._
 import scalaj.http._
-
 import java.net.URLEncoder
-import scala.collection.mutable
 import scala.language.postfixOps
 
 class MultithreadParser {
 
-  def get_array_of_links(start_name: String) = {
+  def get_array_of_links(start_name: String): Seq[LinkMap] = {
 
     val response: HttpResponse[String] = Http("https://en.wikipedia.org/w/api.php?action=parse&page="
       + URLEncoder.encode(name_normalizer(start_name), "UTF-8") + "&prop=links&format=json").asString
 
-    val string_response = response.body.replace("\"*\"", "\"link\"")
+    val string_response = response.body.replace("\"*\":", "\"link\":")
 
     val modified_json_from_response: JsValue = Json.parse(string_response)
 
-    (modified_json_from_response \ "parse" \ "links").get.validate[Example].get
+    (modified_json_from_response \ "parse" \ "links").get.validate[List[LinkMap]].get
+
   }
 
   def name_normalizer(start_name: String): String = {
@@ -30,15 +29,8 @@ class MultithreadParser {
   }
 }
 
-case class LinkMap(map: mutable.Map[String, Any])
+case class LinkMap(ns: Int, link: String, exists: String)
 
-case class Example(list: List[LinkMap])
-
-object Example{
-  implicit val exampleReads: Reads[Example] = Json.reads[Example]
-  implicit val exampleWrites: OWrites[Example] = Json.writes[Example]
-  implicit val exampleFormat: OFormat[Example] = Json.format[Example]
-}
 
 object LinkMap {
   implicit val linkMapReads: Reads[LinkMap] = Json.reads[LinkMap]

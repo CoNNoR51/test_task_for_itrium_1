@@ -1,6 +1,5 @@
 import play.api.libs.json._
 import scalaj.http._
-
 import java.net.URLEncoder
 import scala.collection.mutable
 import scala.language.postfixOps
