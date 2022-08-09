@@ -79,8 +79,8 @@ object Main {
           "Example of url of page: https://en.wikipedia.org/wiki/Pet_door")
 
       case 0 =>
-        //wiki.main_pars("pet door", 3)
-        multi.get_array_of_links("Ancient Egypt")
+        //wiki.main_pars("pet door", 2)
+        multi.main_pars("pet door",3)
 
       case _ => println("\nExiting from program...")
     }
