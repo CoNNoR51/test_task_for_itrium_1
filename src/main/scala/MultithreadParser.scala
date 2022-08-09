@@ -7,7 +7,6 @@ import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent._
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-import scala.util.{Failure, Success}
 
 class MultithreadParser {
 
@@ -28,7 +27,7 @@ class MultithreadParser {
       val number_of_links_on_previous_level = counter
       counter = 0
 
-      val value = multi_thread_request(redirecting_links, number_of_links_on_previous_level, counter)
+      val value = multi_thread_check_level(redirecting_links, number_of_links_on_previous_level, counter)
 
       redirecting_links = value._1
       counter = value._2
@@ -38,44 +37,53 @@ class MultithreadParser {
     }
   }
 
-  def multi_thread_request(redirecting_links: mutable.Seq[String], number_of_links_on_previous_level: Int, counter: Int): (mutable.Seq[String], Int) = {
+  def multi_thread_check_level(redirecting_links: mutable.Seq[String], number_of_links_on_previous_level: Int, counter: Int): (mutable.Seq[String], Int) = {
     var redirecting_links_var = redirecting_links
     var counter_var = counter
+    val step = 30
+    var number_of_threads = step - 1
 
-    for (index_of_link_from_previous_level <- (redirecting_links.length - number_of_links_on_previous_level) until redirecting_links.length) {
+    for (index_of_link_from_previous_level <- (redirecting_links.length - number_of_links_on_previous_level) until redirecting_links.length by step) {
       var list_of_thread: mutable.Seq[Future[(mutable.Seq[String], Int)]] = mutable.Seq()
 
-      for (i <- 0 to 14) {
-        list_of_thread :+= request(redirecting_links_var, index_of_link_from_previous_level)
+      if (index_of_link_from_previous_level + step > redirecting_links.length) {
+        number_of_threads = redirecting_links.length - 1 - index_of_link_from_previous_level
+      } else {
+        number_of_threads = step - 1
       }
-      //val time = 600.millis
-      for (i <- 0 to 14) {
-        //val a = Await.result(list_of_thread(i), time)
-        list_of_thread(i).onComplete {
-          case Success(value) =>
-            redirecting_links_var = value._1
-            counter_var += value._2
-          case Failure(exception)  => println("wth\n" + exception)
-        }
+      println(number_of_threads)
+
+      for (i <- 0 to number_of_threads) {
+        list_of_thread :+= multi_thread_request(redirecting_links_var, index_of_link_from_previous_level + i)
+      }
+
+      val time = 10.seconds
+
+      for (i <- 0 to number_of_threads) {
+        val test = Await.result(list_of_thread(i), time)
+
+        redirecting_links_var :++= test._1
+        counter_var += test._2
+
       }
     }
-    (redirecting_links_var, counter_var)
+    (redirecting_links_var.distinct, counter_var-(redirecting_links_var.length - redirecting_links_var.distinct.length))
   }
 
-  def request(redirecting_links: mutable.Seq[String], index_of_link_from_previous_level: Int): Future[(mutable.Seq[String], Int)] = Future {
+  def multi_thread_request(redirecting_links: mutable.Seq[String], index_of_link_from_previous_level: Int): Future[(mutable.Seq[String], Int)] = Future {
 
     val links = get_array_of_links(redirecting_links(index_of_link_from_previous_level))
 
-    var redirecting_links_var = redirecting_links
+    var link_buffer: mutable.Seq[String] = mutable.Seq()
     var counter_var = 0
 
     for (unchecked_link <- links) {
-      if ((unchecked_link.ns == 0) && !redirecting_links.contains(name_normalizer(unchecked_link.link))) {
-        redirecting_links_var :+= name_normalizer(unchecked_link.link)
+      if ((unchecked_link.ns == 0) && !redirecting_links.contains(name_normalizer(unchecked_link.link)) && !link_buffer.contains(name_normalizer(unchecked_link.link))) {
+        link_buffer :+= name_normalizer(unchecked_link.link)
         counter_var += 1
       }
     }
-    (redirecting_links_var, counter_var)
+    (link_buffer, counter_var)
   }
 
   def get_array_of_links(start_name: String): List[LinkMap] = {
