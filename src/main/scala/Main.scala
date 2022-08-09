@@ -4,6 +4,7 @@ object Main {
   def main(args: Array[String]): Unit = {
 
     val wiki = new WikiParser
+    val multi = new MultithreadParser
     var start_number = -110
 
     println("Wiki parser menu:\n" +
@@ -78,7 +79,8 @@ object Main {
           "Example of url of page: https://en.wikipedia.org/wiki/Pet_door")
 
       case 0 =>
-        wiki.main_pars("pet door", 4)
+        //wiki.main_pars("pet door", 2)
+        multi.main_pars("pet door",3)
 
       case _ => println("\nExiting from program...")
     }
